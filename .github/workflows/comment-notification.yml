@@ -1,0 +1,45 @@
+name: 评论通知系统
+on:
+  discussion_comment:
+    types: [created]
+    
+  workflow_dispatch:  # 允许手动运行
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 获取当前时间
+        id: date
+        run: echo "date=$(date '+%Y年%m月%d日 %H:%M:%S')" >> $GITHUB_OUTPUT
+        
+      - name: 发送邮件通知
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # QQ邮箱配置
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL_USER }}
+          password: ${{ secrets.QQ_EMAIL_PASS }}
+          
+          # 邮件接收配置
+          subject: "💬 新评论通知 - ${{ github.event.discussion.title }}"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: "博客评论机器人 <${{ secrets.QQ_EMAIL_USER }}>"
+          
+          # 邮件内容（简化版，避免复杂表达式）
+          body: |
+            您收到一条新评论！
+            
+            文章：${{ github.event.discussion.title }}
+            用户：${{ github.event.comment.user.login }}
+            时间：${{ steps.date.outputs.date }}
+            
+            评论内容：
+            ${{ github.event.comment.body }}
+            
+            查看链接：
+            ${{ github.event.comment.html_url }}
+            
+            ---
+            此通知由 GitHub Actions 自动发送
