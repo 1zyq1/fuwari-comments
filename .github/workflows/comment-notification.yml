@@ -1,0 +1,96 @@
+name: Comment Notification
+on:
+  discussion_comment:
+    types: [created]
+    
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Send Email Notification via QQ Mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # QQ邮箱SMTP服务器配置
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.QQ_EMAIL_USER }}      # QQ邮箱地址
+          password: ${{ secrets.QQ_EMAIL_PASS }}      # QQ邮箱授权码（不是登录密码）
+          # 邮件内容
+          subject: "📝 新评论通知 - ${{ github.event.discussion.title }}"
+          to: ${{ secrets.NOTIFY_EMAIL }}             # 接收邮箱
+          from: GitHub Discussions Bot
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: "Microsoft YaHei", Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; background: #fff; }
+                .header { background: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59); color: white; padding: 20px; text-align: center; }
+                .content { padding: 25px; }
+                .info-box { background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 15px 0; }
+                .comment-box { background: #fff; border: 1px solid #e1e4e8; border-left: 4px solid #0366d6; padding: 15px; margin: 15px 0; }
+                .button { 
+                  display: inline-block; 
+                  background: linear-gradient(135deg, #12c2e9, #c471ed);
+                  color: white; 
+                  padding: 12px 25px; 
+                  text-decoration: none; 
+                  border-radius: 25px; 
+                  font-weight: bold;
+                  margin: 15px 0;
+                  box-shadow: 0 4px 15px rgba(18, 194, 233, 0.3);
+                }
+                .footer { 
+                  margin-top: 30px; 
+                  padding-top: 15px; 
+                  border-top: 1px solid #eee; 
+                  color: #666; 
+                  font-size: 12px; 
+                  text-align: center;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>💬 您有新的评论消息</h1>
+                </div>
+                
+                <div class="content">
+                  <div class="info-box">
+                    <p>🎯 <strong>文章标题：</strong>${{ github.event.discussion.title }}</p>
+                    <p>👤 <strong>评论用户：</strong>${{ github.event.comment.user.login }}</p>
+                    <p>🕐 <strong>评论时间：</strong>${{ github.event.comment.created_at }}</p>
+                  </div>
+                  
+                  <div style="margin: 20px 0;">
+                    <p><strong>📝 评论内容：</strong></p>
+                    <div class="comment-box">
+                      ${{ github.event.comment.body }}
+                    </div>
+                  </div>
+                  
+                  <div style="text-align: center;">
+                    <a href="${{ github.event.comment.html_url }}" class="button">
+                      🔗 点击查看完整评论
+                    </a>
+                    <p style="color: #666; font-size: 13px; margin-top: 5px;">
+                      如果按钮无法点击，请复制链接：<br>
+                      <span style="color: #0366d6; word-break: break-all;">${{ github.event.comment.html_url }}</span>
+                    </p>
+                  </div>
+                  
+                  <div class="footer">
+                    <p>此邮件由 GitHub Actions 自动发送</p>
+                    <p>📧 发送邮箱：${{ secrets.QQ_EMAIL_USER }}</p>
+                    <p>⏰ 发送时间：${{ fromJSON('"' + steps.date.outputs.date + '"') }}</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+            </html>
