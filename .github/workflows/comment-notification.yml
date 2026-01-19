@@ -27,19 +27,49 @@ jobs:
           to: ${{ secrets.NOTIFY_EMAIL }}
           from: "博客评论机器人 <${{ secrets.QQ_EMAIL_USER }}>"
           
-          # 邮件内容（简化版，避免复杂表达式）
-          body: |
-            您收到一条新评论！
-            
-            文章：${{ github.event.discussion.title }}
-            用户：${{ github.event.comment.user.login }}
-            时间：${{ steps.date.outputs.date }}
-            
-            评论内容：
-            ${{ github.event.comment.body }}
-            
-            查看链接：
-            ${{ github.event.comment.html_url }}
-            
-            ---
-            此通知由 GitHub Actions 自动发送
+          # 邮件内容（HTML格式）
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: 'Microsoft YaHei', sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #0366d6; color: white; padding: 20px; text-align: center; }
+                .content { padding: 20px; background: #f6f8fa; }
+                .button { 
+                  display: inline-block; 
+                  background: #0366d6; 
+                  color: white; 
+                  padding: 10px 20px; 
+                  text-decoration: none; 
+                  border-radius: 5px; 
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>💬 新评论通知</h1>
+                </div>
+                <div class="content">
+                  <p><strong>文章：</strong>${{ github.event.discussion.title }}</p>
+                  <p><strong>用户：</strong>${{ github.event.comment.user.login }}</p>
+                  <p><strong>时间：</strong>${{ steps.date.outputs.date }}</p>
+                  <hr>
+                  <p><strong>评论内容：</strong></p>
+                  <div style="background: white; padding: 15px; border-left: 4px solid #0366d6;">
+                    ${{ github.event.comment.body }}
+                  </div>
+                  <br>
+                  <a href="${{ github.event.comment.html_url }}" class="button">
+                    查看评论
+                  </a>
+                  <p style="margin-top: 20px; color: #666; font-size: 12px;">
+                    此通知由 GitHub Actions 自动发送
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
